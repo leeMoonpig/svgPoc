@@ -1,0 +1,10 @@
+{
+  "name": "svgpoc",
+  "private": true,
+  "dependencies": {
+  },
+  "devDependencies": {
+    "chai": "^4.1.0",
+    "mocha": "^3.4.2"
+  }
+}
