@@ -11,6 +11,21 @@ function toArray(nonArray) {
     return Array.prototype.slice.call((nonArray || []));
 }
 
+function findLastOrMakeNewTSpan(textArea) {
+    var targetTSpan = textArea.lastChild;
+
+    if (!targetTSpan || targetTSpan.nodeName.toLowerCase() !== 'tspan') {
+        targetTSpan = toArray(textArea.getElementsByTagName('tspan')).pop();
+    }
+
+    if (!targetTSpan) {
+        targetTSpan = newTSpan();
+        textArea.appendChild(targetTSpan);
+    }
+
+    return targetTSpan;
+}
+
 function newTSpan(attributesObj) {
     var tSpan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
 
@@ -23,33 +38,24 @@ function newTSpan(attributesObj) {
 
 EditableTextArea.prototype.buildInput = function buildInput() {
     var textArea = document.createElement('textarea');
-    textArea.value = this.element.textContent;
+    textArea.value = this.element.textContent.replace(/  +/g, ' ');
 
     if (this.fitType === 'multiline') {
-        // Needs debouncing?!?
+        /* TODO: consider debounce strategy */
         textArea.addEventListener('keyup', this.updateMultineText.bind(this));
     } else {
-
+        /* TODO: singline line, resizing policy */
     }
-    // dumb
+    // dumb positioning just for POC
     document.body.appendChild(textArea);
 };
 
 function appendWord(textArea, maxWidth, word, index) {
-    var targetTSpan = textArea.lastChild;
+    var targetTSpan = findLastOrMakeNewTSpan(textArea);
     var newLineTSpan;
     var originalContent;
     var newLine = /\r|\n/.exec(word);
     var formattedWord = word.replace(/\s/g, '\u00A0');
-
-    if (!targetTSpan || targetTSpan.nodeName.toLowerCase() !== 'tspan') {
-        targetTSpan = toArray(textArea.getElementsByTagName('tspan')).pop();
-    }
-
-    if (!targetTSpan) {
-        targetTSpan = newTSpan();
-        textArea.appendChild(targetTSpan);
-    }
 
     originalContent = targetTSpan.textContent;
 
@@ -69,6 +75,8 @@ function appendWord(textArea, maxWidth, word, index) {
 
 EditableTextArea.prototype.updateMultineText = function updateMultineText(event) {
     /* TODO: honour multiple consec line breaks */
+    /* TODO: make a maximum number of new lines restriction */
+    /* TODO: what about breaking single, really long words? */
     var editableTextAreaInstance = this;
     var textToApply = event.target.value;
     var textToApplyArray = textToApply.split(/( |\r|\n)/);
